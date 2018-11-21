@@ -27,22 +27,32 @@ public class ProgramManager {
         programManager = new HashMap<>();
     }
 
-    UUID buildGraphicsProgramRaw(Context context, int rawVertexFileId, int rawFragmentFileId)
+    public UUID buildGraphicsProgramRaw(Context context, int rawVertexFileId, int rawFragmentFileId)
     {
         ProgramObject programObject = doBuildGraphicsProgramFromRawResource(context, rawVertexFileId, rawFragmentFileId);
         // we have a valid programId.
-        UUID uuid = addProgramToManager(programObject);
-
-        return uuid;
+        return addProgramToManager(programObject);
     }
 
-    UUID buildGraphicsProgramAssets(Context context, String vertexFile, String fragmentFile)
+    public UUID buildGraphicsProgramAssets(Context context, String vertexFile, String fragmentFile)
     {
         ProgramObject programObject = doBuildGraphicsProgramFromAssets(context, vertexFile, fragmentFile);
         // we have a valid programId.
-        UUID uuid = addProgramToManager(programObject);
+        return addProgramToManager(programObject);
+    }
 
-        return uuid;
+    public UUID buildComputeProgramRaw(Context context, int rawComputeFileId)
+    {
+        ProgramObject programObject = doBuildComputeProgramFromRawResource(context, rawComputeFileId);
+        // we have a valid programId.
+        return addProgramToManager(programObject);
+    }
+
+    public UUID buildComputeProgramAssets(Context context, String computeFile)
+    {
+        ProgramObject programObject = doBuildComputeProgramFromAssets(context, computeFile);
+        // we have a valid programId.
+        return addProgramToManager(programObject);
     }
 
     public void activateProgram(UUID uuid)
@@ -91,17 +101,41 @@ public class ProgramManager {
         return programObject;
     }
 
+    private ProgramObject doBuildComputeProgramFromRawResource(Context context, int computeRawResourceId) {
+        ShaderObject computeShader = buildCompute(context, computeRawResourceId);
+
+        ProgramObject programObject = new ProgramObject(glCreateProgram());
+        attachShaderToProgram(programObject, computeShader);
+
+        linkProgram(programObject);
+        checkProgramStatus(programObject);
+
+        detachAndDeleteShader(programObject, computeShader);
+
+        return programObject;
+    }
+
+    private ProgramObject doBuildComputeProgramFromAssets(Context context, String computeFile) {
+        ShaderObject computeShader = buildCompute(context, computeFile);
+
+        ProgramObject programObject = new ProgramObject(glCreateProgram());
+        attachShaderToProgram(programObject, computeShader);
+
+        linkProgram(programObject);
+        checkProgramStatus(programObject);
+
+        detachAndDeleteShader(programObject, computeShader);
+
+        return programObject;
+    }
+
 
     private InputStream openStreamToFile(Context context, String fileName) throws IOException {
-        InputStream inputStream = context.getAssets().open(fileName);
-
-        return inputStream;
+        return context.getAssets().open(fileName);
     }
 
     private InputStream openStreamToFile(Context context, int rawResourceId) throws IOException {
-        InputStream inputStream = context.getResources().openRawResource(rawResourceId);
-
-        return inputStream;
+        return context.getResources().openRawResource(rawResourceId);
     }
 
     private String readSource(InputStream inputStream) throws IOException {
