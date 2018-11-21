@@ -15,6 +15,8 @@ public class KnuRenderer implements GLSurfaceView.Renderer {
     Context context;
     float[] clearColorBuffer = new float[4];
     float[] clearDepthBuffer = new float[1];
+    int viewWidth = 0;
+    int viewHieght = 0;
 
     public KnuRenderer(Context context) {
         this.context = context;
@@ -29,7 +31,10 @@ public class KnuRenderer implements GLSurfaceView.Renderer {
 
     @Override
     public void onSurfaceChanged(GL10 gl, int width, int height) {
+        viewWidth = width;
+        viewHieght = height;
 
+        glViewport(0, 0, width, height);
     }
 
     @Override
@@ -37,6 +42,8 @@ public class KnuRenderer implements GLSurfaceView.Renderer {
 
         glClearBufferfv(GL_DEPTH, 0, clearDepthBuffer, 0);
         glClearBufferfv(GL_COLOR, 0, clearColorBuffer, 0);
+
+
 
     }
 
