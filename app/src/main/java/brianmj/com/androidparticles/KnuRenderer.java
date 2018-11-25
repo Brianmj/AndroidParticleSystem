@@ -4,6 +4,8 @@ import android.content.Context;
 import android.opengl.GLES32;
 import android.opengl.GLSurfaceView;
 
+import java.util.UUID;
+
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 

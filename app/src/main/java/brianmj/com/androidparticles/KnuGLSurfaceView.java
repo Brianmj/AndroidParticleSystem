@@ -39,6 +39,6 @@ public class KnuGLSurfaceView extends GLSurfaceView {
         setEGLConfigChooser(redBits, greenBits, blueBits, alphaBits, depthBits, stencilBits);
 
         // seteglcontextclientversion and configchooser need to be called before setRenderer
-        setRenderer(new KnuRenderer(this.getContext().getApplicationContext()));
+        setRenderer(new KnuRendererTextureAndShaderTest(this.getContext().getApplicationContext()));
     }
 }

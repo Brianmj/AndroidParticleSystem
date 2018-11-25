@@ -155,6 +155,7 @@ public class ProgramManager {
 
             while (line != null) {
                 sb.append(line);
+                sb.append("\n");    // append a newline after each read so opengl parses it correctly
                 line = buf.readLine();
             }
         }
@@ -296,7 +297,7 @@ public class ProgramManager {
         if (success[0] <= GL_FALSE) {
             // failure
             String errorString = glGetShaderInfoLog(so.getShaderObject());
-            String resultString = so.getShaderType().name() + ": " + errorString;
+            String resultString = so.getShaderType().name() + " Shader: " + errorString;
             throw new RuntimeException(resultString);
         }
     }
