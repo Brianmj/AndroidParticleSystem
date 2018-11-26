@@ -126,11 +126,12 @@ public class KnuRendererTextureAndShaderTest implements GLSurfaceView.Renderer, 
         glClearBufferfv(GL_DEPTH, 0, clearDepthBuffer, 0);
         glClearBufferfv(GL_COLOR, 0, clearColorBuffer, 0);
 
+        glActiveTexture(GL_TEXTURE0 + 1);
         programManager.activateProgram(programID);
         textureManager.bindTexture(textureID);
 
-        glUniformMatrix4fv(4, 1, false, projectionMatrix, 0);
-        glUniformMatrix4fv(8, 1, false, modelviewMatrix, 0);
+        glUniformMatrix4fv(0, 1, false, projectionMatrix, 0);
+        glUniformMatrix4fv(1, 1, false, modelviewMatrix, 0);
 
         glBindVertexArray(vao[0]);
         glDrawArrays(GL_TRIANGLES, 0, 6);
