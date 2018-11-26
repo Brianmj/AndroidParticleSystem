@@ -4,6 +4,7 @@ import android.content.Context;
 import android.opengl.GLES32;
 import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
+import android.util.Log;
 
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
@@ -24,9 +25,9 @@ import static android.opengl.GLES32.GL_DEPTH;
 import static android.opengl.GLES32.glClearBufferfv;
 import static android.opengl.GLES32.glViewport;
 
-public class KnuRendererTextureAndShaderTest implements GLSurfaceView.Renderer {
+public class KnuRendererTextureAndShaderTest implements GLSurfaceView.Renderer, DebugProc {
 
-    private static final String TAG = "KNU_RENDERER";
+    private static final String TAG = "KNU_RENDERER_TEXTURE_AND_SHADER_TEST";
     Context context;
     float[] clearColorBuffer = new float[4];
     float[] clearDepthBuffer = new float[1];
@@ -42,7 +43,7 @@ public class KnuRendererTextureAndShaderTest implements GLSurfaceView.Renderer {
     float[] projectionMatrix = new float[16];
     float[] modelviewMatrix = new float[16];
 
-
+    int graphicsError = 0;
 
     UUID textureID = null;
     UUID programID = null;
@@ -53,6 +54,8 @@ public class KnuRendererTextureAndShaderTest implements GLSurfaceView.Renderer {
     }
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
+
+        graphicsError = glGetError();
         clearColorBuffer[0] = 0.607843f; clearColorBuffer[1] = 0.803921f; clearColorBuffer[2] = 0.992156f; clearColorBuffer[3] = 1.0f;
         clearDepthBuffer[0] = 1.0f;
 
@@ -61,13 +64,17 @@ public class KnuRendererTextureAndShaderTest implements GLSurfaceView.Renderer {
         glGetIntegerv(GL_MAJOR_VERSION, majorVersion, 0);
         glGetIntegerv(GL_MINOR_VERSION, minorVersion, 0);
 
+        graphicsError = glGetError();
         String textureImage = "images/paladin.png";
         textureID = textureManager.load2DTextureFromAssets(context, textureImage);
+
+        graphicsError = glGetError();
 
         String vertexShader = "shaders/quad_texture.vert";
         String fragmentShader = "shaders/quad_texture.frag";
         programID = programManager.buildGraphicsProgramAssets(context, vertexShader, fragmentShader);
 
+        graphicsError = glGetError();
         glGenBuffers(1, vbo, 0);
         glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
                                     //vertex                    texcoords
@@ -98,7 +105,7 @@ public class KnuRendererTextureAndShaderTest implements GLSurfaceView.Renderer {
         glEnableVertexAttribArray(1);
 
         Matrix.setIdentityM(projectionMatrix, 0);
-        Matrix.frustumM(projectionMatrix, 0, -5.0f, 5.0f, -5.0f, 5.0f,
+        Matrix.frustumM(projectionMatrix, 0, -3.0f, 3.0f, -3.0f, 3.0f,
                 0.1f, 100.0f);
 
         Matrix.setIdentityM(modelviewMatrix, 0);
@@ -131,5 +138,11 @@ public class KnuRendererTextureAndShaderTest implements GLSurfaceView.Renderer {
 
     }
 
+    @Override
+    public void onMessage(int source, int type, int id, int severity, String message) {
+        String error = "Source: " + source + ", Type: " + type + ", ID: " + id
+                + ", Severity: " + severity + ", Message: " + message;
 
+        Log.d(TAG, error);
+    }
 }

@@ -3,6 +3,7 @@ package brianmj.com.androidparticles;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -73,6 +74,14 @@ public class TextureManager {
         }
 
         private TextureObject build2DTexture(Bitmap bitmap) {
+
+            // android bitmaps have (0,0) at top left, so we need to flip the image
+            // this is and android.Graphics.Matrix, not an android.OpenGL.Matrix
+            Matrix flipMatrix = new Matrix();
+            flipMatrix.postScale(1.0f, -1.0f);
+            bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(),
+                    flipMatrix, false);
+
             int textureWidth = bitmap.getWidth();
             int textureHeight = bitmap.getHeight();
             Bitmap.Config config = bitmap.getConfig();
@@ -94,7 +103,7 @@ public class TextureManager {
                 case ARGB_8888: {
                     glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, textureWidth, textureHeight);
                     glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, textureWidth,
-                            textureHeight, GL_RGBA, GL_BYTE, pixelData);
+                            textureHeight, GL_RGBA, GL_UNSIGNED_BYTE, pixelData);
 
                     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
                     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);

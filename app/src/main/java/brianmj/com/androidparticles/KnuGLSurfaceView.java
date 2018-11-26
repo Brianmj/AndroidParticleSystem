@@ -4,6 +4,8 @@ import android.content.Context;
 import android.opengl.GLSurfaceView;
 import android.util.AttributeSet;
 
+import javax.microedition.khronos.opengles.GL;
+
 public class KnuGLSurfaceView extends GLSurfaceView {
 
     // this constructor is used if you manually new up a GLView
@@ -19,15 +21,13 @@ public class KnuGLSurfaceView extends GLSurfaceView {
         int stencilBits = 0;
         setEGLConfigChooser(redBits, greenBits, blueBits, alphaBits, depthBits, stencilBits);
 
-
         // seteglcontextclientversion and configchooser need to be called before setRenderer
         setRenderer(new KnuRenderer(this.getContext().getApplicationContext()));
     }
 
-    // use this construtor if just want to use the view from a layout
+    // use this constructor if just want to use the view from a layout
     public KnuGLSurfaceView(Context context, AttributeSet attribs){
         super(context, attribs);
-
 
         setEGLContextClientVersion(3);
         int redBits = 8;
@@ -40,5 +40,6 @@ public class KnuGLSurfaceView extends GLSurfaceView {
 
         // seteglcontextclientversion and configchooser need to be called before setRenderer
         setRenderer(new KnuRendererTextureAndShaderTest(this.getContext().getApplicationContext()));
+
     }
 }
