@@ -3,10 +3,11 @@ package brianmj.com.androidparticles;
 import android.content.Context;
 import android.opengl.GLSurfaceView;
 import android.util.AttributeSet;
+import android.view.View;
 
 import javax.microedition.khronos.opengles.GL;
 
-public class KnuGLSurfaceView extends GLSurfaceView {
+public class KnuGLSurfaceView extends GLSurfaceView implements View.OnTouchListener {
 
     // this constructor is used if you manually new up a GLView
     public KnuGLSurfaceView(Context context){
@@ -40,6 +41,5 @@ public class KnuGLSurfaceView extends GLSurfaceView {
 
         // seteglcontextclientversion and configchooser need to be called before setRenderer
         setRenderer(new KnuRendererTextureAndShaderTest(this.getContext().getApplicationContext()));
-
     }
 }
