@@ -1,16 +1,18 @@
 package brianmj.com.androidparticles;
 
 import android.content.Context;
-import android.opengl.GLES32;
 import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
 import android.util.Log;
+import android.view.MotionEvent;
 
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.FloatBuffer;
+import java.util.Collections;
 import java.util.UUID;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -25,14 +27,15 @@ import static android.opengl.GLES32.GL_DEPTH;
 import static android.opengl.GLES32.glClearBufferfv;
 import static android.opengl.GLES32.glViewport;
 
-public class KnuRendererTextureAndShaderTest implements GLSurfaceView.Renderer, DebugProc {
+public class KnuRendererTextureAndShaderTest implements GLSurfaceView.Renderer{
 
-    private static final String TAG = "KNU_RENDERER_TEXTURE_AND_SHADER_TEST";
+    private static final String TAG = "KnuRendererTextureAndShaderTest";
     Context context;
+    BlockingQueue<MotionEvent> inputEventQueue;
     float[] clearColorBuffer = new float[4];
     float[] clearDepthBuffer = new float[1];
     int viewWidth = 0;
-    int viewHieght = 0;
+    int viewHeight = 0;
 
     TextureManager textureManager = new TextureManager();
     ProgramManager programManager = new ProgramManager();
@@ -48,15 +51,21 @@ public class KnuRendererTextureAndShaderTest implements GLSurfaceView.Renderer, 
     UUID textureID = null;
     UUID programID = null;
 
-    public KnuRendererTextureAndShaderTest(Context context) {
+    public KnuRendererTextureAndShaderTest(Context context,
+                                           BlockingQueue<MotionEvent> inputEventQueue) {
         this.context = context;
-
+        this.inputEventQueue = inputEventQueue;
     }
+
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
 
-        graphicsError = glGetError();
-        clearColorBuffer[0] = 0.607843f; clearColorBuffer[1] = 0.803921f; clearColorBuffer[2] = 0.992156f; clearColorBuffer[3] = 1.0f;
+        Log.d(TAG, Thread.currentThread().getName());
+
+        clearColorBuffer[0] = 0.607843f;
+        clearColorBuffer[1] = 0.803921f;
+        clearColorBuffer[2] = 0.992156f;
+        clearColorBuffer[3] = 1.0f;
         clearDepthBuffer[0] = 1.0f;
 
         int[] majorVersion = {0};
@@ -64,26 +73,23 @@ public class KnuRendererTextureAndShaderTest implements GLSurfaceView.Renderer, 
         glGetIntegerv(GL_MAJOR_VERSION, majorVersion, 0);
         glGetIntegerv(GL_MINOR_VERSION, minorVersion, 0);
 
-        graphicsError = glGetError();
-        String textureImage = "images/paladin.png";
+        String textureImage = "images/rashid.jpg";
         textureID = textureManager.load2DTextureFromAssets(context, textureImage);
 
-        graphicsError = glGetError();
 
         String vertexShader = "shaders/quad_texture.vert";
         String fragmentShader = "shaders/quad_texture.frag";
         programID = programManager.buildGraphicsProgramAssets(context, vertexShader, fragmentShader);
 
-        graphicsError = glGetError();
         glGenBuffers(1, vbo, 0);
         glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
-                                    //vertex                    texcoords
-        float[] vertexBuffer = {-4.0f, 4.0f, 0.0f, 1.0f,        0f, 1f,
-                                -4.0f, -4.0f, 0.0f, 1.0f,       0f, 0f,
-                                4.0f,   4.0f, 0.0f, 1.0f,       1f, 1f,
-                                4.0f,   4.0f, 0.0f, 1.0f,       1f, 1f,
-                                -4.0f, -4.0f, 0.0f, 1.0f,       0f, 0f,
-                                4.0f,   -4.0f, 0.0f, 1.0f,      1f, 0f};
+        //vertex                    texcoords
+        float[] vertexBuffer = {-4.0f, 4.0f, 0.0f, 1.0f, 0f, 1f,
+                -4.0f, -4.0f, 0.0f, 1.0f, 0f, 0f,
+                4.0f, 4.0f, 0.0f, 1.0f, 1f, 1f,
+                4.0f, 4.0f, 0.0f, 1.0f, 1f, 1f,
+                -4.0f, -4.0f, 0.0f, 1.0f, 0f, 0f,
+                4.0f, -4.0f, 0.0f, 1.0f, 1f, 0f};
 
         final int SIZE_OF_FLOAT_BYTES = 4;
         int bufferSize = vertexBuffer.length * SIZE_OF_FLOAT_BYTES;
@@ -104,10 +110,6 @@ public class KnuRendererTextureAndShaderTest implements GLSurfaceView.Renderer, 
         glVertexAttribPointer(1, 2, GL_FLOAT, false, SIZE_OF_FLOAT_BYTES * 6, SIZE_OF_FLOAT_BYTES * 4);
         glEnableVertexAttribArray(1);
 
-        Matrix.setIdentityM(projectionMatrix, 0);
-        Matrix.frustumM(projectionMatrix, 0, -3.0f, 3.0f, -3.0f, 3.0f,
-                0.1f, 100.0f);
-
         Matrix.setIdentityM(modelviewMatrix, 0);
         Matrix.translateM(modelviewMatrix, 0, 0.0f, 0.0f, -0.2f);
     }
@@ -115,14 +117,48 @@ public class KnuRendererTextureAndShaderTest implements GLSurfaceView.Renderer, 
     @Override
     public void onSurfaceChanged(GL10 gl, int width, int height) {
         viewWidth = width;
-        viewHieght = height;
+        viewHeight = height;
 
         glViewport(0, 0, width, height);
+
+        float ratio = (float) viewWidth / (float) viewHeight;
+        float ratio2 = (float)viewHeight / (float)viewWidth;
+
+        Matrix.setIdentityM(projectionMatrix, 0);
+
+        if (width < height)
+            Matrix.frustumM(projectionMatrix, 0, -3.0f * ratio, 3.0f * ratio, -3.0f, 3.0f,
+                    0.1f, 100.0f);
+        else
+            Matrix.frustumM(projectionMatrix, 0, -3.0f, 3.0f, -3.0f * ratio2, 3.0f * ratio2,
+                    0.1f, 100.0f);
     }
 
     @Override
     public void onDrawFrame(GL10 gl) {
+        processInput();
+        updateState();
+        drawOutput();
+    }
 
+    private void processInput() {
+
+        MotionEvent inputEvent = inputEventQueue.poll();
+
+        while(inputEvent != null) {
+            Log.d(TAG, Thread.currentThread().getName());
+
+            inputEvent = inputEventQueue.poll();
+
+        }
+
+    }
+
+    private void updateState() {
+
+    }
+
+    private void drawOutput() {
         glClearBufferfv(GL_DEPTH, 0, clearDepthBuffer, 0);
         glClearBufferfv(GL_COLOR, 0, clearColorBuffer, 0);
 
@@ -136,14 +172,5 @@ public class KnuRendererTextureAndShaderTest implements GLSurfaceView.Renderer, 
         glBindVertexArray(vao[0]);
         glDrawArrays(GL_TRIANGLES, 0, 6);
         glBindVertexArray(0);
-
-    }
-
-    @Override
-    public void onMessage(int source, int type, int id, int severity, String message) {
-        String error = "Source: " + source + ", Type: " + type + ", ID: " + id
-                + ", Severity: " + severity + ", Message: " + message;
-
-        Log.d(TAG, error);
     }
 }

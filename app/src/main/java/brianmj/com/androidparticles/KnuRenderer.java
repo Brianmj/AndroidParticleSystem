@@ -3,8 +3,11 @@ package brianmj.com.androidparticles;
 import android.content.Context;
 import android.opengl.GLES32;
 import android.opengl.GLSurfaceView;
+import android.view.MotionEvent;
 
 import java.util.UUID;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -15,13 +18,16 @@ public class KnuRenderer implements GLSurfaceView.Renderer {
 
     private static final String TAG = "KNU_RENDERER";
     Context context;
+    BlockingQueue<MotionEvent> inputEventQueue;
     float[] clearColorBuffer = new float[4];
     float[] clearDepthBuffer = new float[1];
     int viewWidth = 0;
     int viewHieght = 0;
 
-    public KnuRenderer(Context context) {
+    public KnuRenderer(Context context,
+                       BlockingQueue<MotionEvent> inputEventQueue) {
         this.context = context;
+        this.inputEventQueue = inputEventQueue;
 
     }
     @Override
@@ -44,8 +50,6 @@ public class KnuRenderer implements GLSurfaceView.Renderer {
 
         glClearBufferfv(GL_DEPTH, 0, clearDepthBuffer, 0);
         glClearBufferfv(GL_COLOR, 0, clearColorBuffer, 0);
-
-
 
     }
 
