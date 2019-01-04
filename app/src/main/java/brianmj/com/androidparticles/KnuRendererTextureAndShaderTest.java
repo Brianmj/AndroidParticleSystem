@@ -9,6 +9,8 @@ import android.view.MotionEvent;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 import java.util.Collections;
 import java.util.UUID;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -114,6 +116,7 @@ public class KnuRendererTextureAndShaderTest implements GLSurfaceView.Renderer{
         Matrix.translateM(modelviewMatrix, 0, 0.0f, 0.0f, -0.2f);
     }
 
+
     @Override
     public void onSurfaceChanged(GL10 gl, int width, int height) {
         viewWidth = width;
@@ -125,6 +128,8 @@ public class KnuRendererTextureAndShaderTest implements GLSurfaceView.Renderer{
         float ratio2 = (float)viewHeight / (float)viewWidth;
 
         Matrix.setIdentityM(projectionMatrix, 0);
+
+
 
         if (width < height)
             Matrix.frustumM(projectionMatrix, 0, -3.0f * ratio, 3.0f * ratio, -3.0f, 3.0f,
@@ -170,6 +175,7 @@ public class KnuRendererTextureAndShaderTest implements GLSurfaceView.Renderer{
         glUniformMatrix4fv(1, 1, false, modelviewMatrix, 0);
 
         glBindVertexArray(vao[0]);
+
         glDrawArrays(GL_TRIANGLES, 0, 6);
         glBindVertexArray(0);
     }
